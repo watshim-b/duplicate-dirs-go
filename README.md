@@ -1,4 +1,4 @@
-# tool-linux-golang
+# duplicate-dirs-go
 
 # 概要
 go言語製の便利ツール類を格納しています。
