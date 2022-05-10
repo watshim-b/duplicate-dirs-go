@@ -45,7 +45,7 @@ func (e *extractor) ExtractFilePath(c ddgos.Commader) ([]ExtractData, error) {
 		return nil, err
 	}
 
-	edArr = append(edArr, ExtractData{FileInfo: fi, FileDirPath: e.opt.TopDir})
+	edArr = append(edArr, ExtractData{FileInfo: fi, FileDirPath: filepath.Dir(e.opt.TopDir)})
 
 	rtEdArr, err := e.extractRecursiveFile(e.opt.TopDir, c)
 	if err != nil {
@@ -62,7 +62,7 @@ func (e *extractor) extractRecursiveFile(topDir string, c ddgos.Commader) ([]Ext
 	edArr := []ExtractData{}
 
 	// topdir以下のファイルの情報を取得する
-	files, err := ioutil.ReadDir(e.opt.TopDir)
+	files, err := ioutil.ReadDir(topDir)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,15 @@ func (e *extractor) ExtractOwnerAndGroup(edArr []ExtractData, c ddgos.Commader) 
 	for loopN, ed := range edArr {
 
 		// 以上をして最終的にアウトプットして、shファイルが作成される。
-		result, err := exec.Command(c.GetExtractOwnerAndGroupCd(), c.GetExtractOwnerAndGroupCdArgs(filepath.Join(ed.FileDirPath, ed.FileInfo.Name()))...).Output()
+
+		var filePath string
+		if ed.FileInfo.IsDir() {
+			filePath = ed.FileDirPath
+		} else {
+			filePath = filepath.Join(ed.FileDirPath, ed.FileInfo.Name())
+		}
+
+		result, err := exec.Command(c.GetExtractOwnerAndGroupCd(), c.GetExtractOwnerAndGroupCdArgs(filePath, ed.FileInfo)...).Output()
 
 		// エラーがあった場合は処理を終了する
 		if err != nil {

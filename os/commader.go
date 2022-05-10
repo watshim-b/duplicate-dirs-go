@@ -26,7 +26,7 @@ type Commader interface {
 	GetExtractOwnerAndGroupCd() string
 
 	// ファイルのユーザとグループを抽出するコマンドの引数
-	GetExtractOwnerAndGroupCdArgs(string) []string
+	GetExtractOwnerAndGroupCdArgs(string, fs.FileInfo) []string
 
 	// 改行コードを取得する
 	GetLineFeed() string

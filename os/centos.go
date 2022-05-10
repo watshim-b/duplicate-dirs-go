@@ -36,8 +36,12 @@ func (o *centOs) GetExtractOwnerAndGroupCd() string {
 	return "ls"
 }
 
-func (o *centOs) GetExtractOwnerAndGroupCdArgs(filePath string) []string {
-	return []string{"-la", filePath}
+func (o *centOs) GetExtractOwnerAndGroupCdArgs(filePath string, fileInfo fs.FileInfo) []string {
+	if fileInfo.IsDir() {
+		return []string{"-lda", filePath}
+	} else {
+		return []string{"-la", filePath}
+	}
 }
 
 func (o *centOs) ExtractOwner(strArr string) string {

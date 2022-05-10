@@ -29,7 +29,7 @@ type Option struct {
 }
 
 func (o *Option) BindFromFlag() error {
-	flag.StringVar(&o.LoadFileNm, "lfn", "duplicate.{ext}", "generate file name.")
+	flag.StringVar(&o.LoadFileNm, "lfn", "duplicate", "generate file name.")
 	flag.StringVar(&o.TopDir, "td", "/home", "file licursive top dir.")
 	flag.BoolVar(&o.NeedsOutputChown, "aco", false, "need ouput chown command.")
 	flag.BoolVar(&o.NeedsOutputChmod, "acm", false, "need ouput chmod command.")
@@ -38,10 +38,10 @@ func (o *Option) BindFromFlag() error {
 	osStr := flag.String("os", "", "specific target os.")
 
 	// 初期値がtrueの場合にBoolVarが使えないので、こちらに変更
-	odo := flag.Bool("odl", true, "a bool")
+	odl := flag.Bool("odl", true, "output only directory related command.")
 
 	flag.Parse()
-	o.OnlyDirLoad = *odo
+	o.OnlyDirLoad = *odl
 	o.Os = *osStr
 
 	println("")
@@ -57,7 +57,7 @@ func (o *Option) BindFromFlag() error {
 	print("・acm:")
 	println(o.NeedsOutputChmod)
 	print("・os:")
-	println(osStr)
+	println(*osStr)
 	println("")
 
 	return nil
