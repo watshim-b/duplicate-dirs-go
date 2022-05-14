@@ -19,16 +19,16 @@ func main() {
 	opt.BindFromFlag()
 
 	// 対象のosを特定して構造体を初期化する
-	osType := ddgos.ValueOf(opt.Os)
-	if osType == ddgos.None {
+	osKind := ddgos.ValueOf(opt.Os)
+	if osKind == ddgos.None {
 		println(fmt.Sprintf("指定されたOSは存在しません。 利用可能なOSは、 %s です。", ddgos.AvailableOS()))
 		os.Exit(1)
 	}
-	ddgOs := osType.GenerateOSInstance()
+	opSys := osKind.GenerateOSInstance()
 
 	// 復元元のファイル情報を抽出する
 	e := extract.NewExtractor(opt)
-	extractDataArr, err := e.ExtractFilePath(ddgOs)
+	extractDataArr, err := e.ExtractFilePath(opSys)
 	if err != nil {
 		println(err.Error())
 		os.Exit(1)
@@ -36,7 +36,7 @@ func main() {
 
 	// 権限情報も抽出する櫃よぐある場合は、一緒に抽出する
 	if opt.NeedsOutputChown {
-		extractDataArr, err = e.ExtractOwnerAndGroup(extractDataArr, ddgOs)
+		extractDataArr, err = e.ExtractOwnerAndGroup(extractDataArr, opSys)
 		if err != nil {
 			println(err.Error())
 			os.Exit(1)
@@ -53,7 +53,7 @@ func main() {
 
 	// 最終的なファイルを出力する
 	l := loader.NewLoader(opt)
-	err = l.Load(f, extractDataArr, ddgOs)
+	err = l.Load(f, extractDataArr, opSys)
 	if err != nil {
 		println(err.Error())
 		os.Exit(1)

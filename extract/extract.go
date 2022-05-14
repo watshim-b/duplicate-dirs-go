@@ -28,7 +28,7 @@ func NewExtractor(opt *option.Option) *extractor {
 // TODO ExtractOwnerAndGroup・ExtractFilePathをトランスフォーマーに食わせる構成に変更したい。
 
 // フォルダを走査して、ファイルパスとファイル情報を抽出する
-func (e *extractor) ExtractFilePath(c ddgos.Commader) ([]ExtractData, error) {
+func (e *extractor) ExtractFilePath(o ddgos.OS) ([]ExtractData, error) {
 
 	edArr := []ExtractData{}
 
@@ -47,7 +47,7 @@ func (e *extractor) ExtractFilePath(c ddgos.Commader) ([]ExtractData, error) {
 
 	edArr = append(edArr, ExtractData{FileInfo: fi, FileDirPath: filepath.Dir(e.opt.TopDir)})
 
-	rtEdArr, err := e.extractRecursiveFile(e.opt.TopDir, c)
+	rtEdArr, err := e.extractRecursiveFile(e.opt.TopDir, o)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (e *extractor) ExtractFilePath(c ddgos.Commader) ([]ExtractData, error) {
 }
 
 // 再帰的にフォルダを走査して、ファイルパスとファイル情報を抽出する
-func (e *extractor) extractRecursiveFile(topDir string, c ddgos.Commader) ([]ExtractData, error) {
+func (e *extractor) extractRecursiveFile(topDir string, o ddgos.OS) ([]ExtractData, error) {
 
 	edArr := []ExtractData{}
 
@@ -71,7 +71,7 @@ func (e *extractor) extractRecursiveFile(topDir string, c ddgos.Commader) ([]Ext
 
 		if file.IsDir() {
 			edArr = append(edArr, ExtractData{FileInfo: file, FileDirPath: topDir})
-			rtEdArr, err := e.extractRecursiveFile(filepath.Join(topDir, file.Name()), c)
+			rtEdArr, err := e.extractRecursiveFile(filepath.Join(topDir, file.Name()), o)
 			if err != nil {
 				return nil, err
 			}
@@ -91,7 +91,7 @@ func (e *extractor) extractRecursiveFile(topDir string, c ddgos.Commader) ([]Ext
 }
 
 // 所有者とグループ情報を抽出する
-func (e *extractor) ExtractOwnerAndGroup(edArr []ExtractData, c ddgos.Commader) ([]ExtractData, error) {
+func (e *extractor) ExtractOwnerAndGroup(edArr []ExtractData, o ddgos.OS) ([]ExtractData, error) {
 	for loopN, ed := range edArr {
 
 		// 以上をして最終的にアウトプットして、shファイルが作成される。
@@ -103,7 +103,7 @@ func (e *extractor) ExtractOwnerAndGroup(edArr []ExtractData, c ddgos.Commader) 
 			filePath = filepath.Join(ed.FileDirPath, ed.FileInfo.Name())
 		}
 
-		result, err := exec.Command(c.GetExtractOwnerAndGroupCd(), c.GetExtractOwnerAndGroupCdArgs(filePath, ed.FileInfo)...).Output()
+		result, err := exec.Command(o.GetExtractOwnerAndGroupCd(), o.GetExtractOwnerAndGroupCdArgs(filePath, ed.FileInfo)...).Output()
 
 		// エラーがあった場合は処理を終了する
 		if err != nil {
@@ -111,8 +111,8 @@ func (e *extractor) ExtractOwnerAndGroup(edArr []ExtractData, c ddgos.Commader) 
 		}
 
 		// ユーザーとグループの設定
-		edArr[loopN].Owner = c.ExtractOwner(string(result))
-		edArr[loopN].Group = c.ExtractGroup(string(result))
+		edArr[loopN].Owner = o.ExtractOwner(string(result))
+		edArr[loopN].Group = o.ExtractGroup(string(result))
 	}
 	return edArr, nil
 }

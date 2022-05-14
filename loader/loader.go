@@ -19,9 +19,9 @@ func NewLoader(opt *option.Option) *loader {
 	return &loader{opt}
 }
 
-func (l *loader) Load(w io.Writer, edArr []extract.ExtractData, c ddgos.Commader) error {
+func (l *loader) Load(w io.Writer, edArr []extract.ExtractData, o ddgos.OS) error {
 	// まずはおまじないを出力
-	_, err := w.Write([]byte(c.GetExecuteFileReservedWord()))
+	_, err := w.Write([]byte(o.GetExecuteFileReservedWord()))
 	if err != nil {
 		return err
 	}
@@ -29,14 +29,14 @@ func (l *loader) Load(w io.Writer, edArr []extract.ExtractData, c ddgos.Commader
 	for _, ed := range edArr {
 
 		// 対象ファイルの区切り文字として出力
-		_, err = w.Write([]byte(fmt.Sprintf("#target : %s%s", filepath.Join(ed.FileDirPath, ed.FileInfo.Name()), c.GetLineFeed())))
+		_, err = w.Write([]byte(fmt.Sprintf("#target : %s%s", filepath.Join(ed.FileDirPath, ed.FileInfo.Name()), o.GetLineFeed())))
 		if err != nil {
 			return err
 		}
 
 		// ディレクトリだった場合は、mkdirコマンドを書き出す
 		if ed.FileInfo.IsDir() {
-			_, err = w.Write([]byte(fmt.Sprintf("%s%s", c.GetMkdirCd(filepath.Join(ed.FileDirPath, ed.FileInfo.Name())), c.GetLineFeed())))
+			_, err = w.Write([]byte(fmt.Sprintf("%s%s", o.GetMkdirCd(filepath.Join(ed.FileDirPath, ed.FileInfo.Name())), o.GetLineFeed())))
 			if err != nil {
 				return err
 			}
@@ -44,7 +44,7 @@ func (l *loader) Load(w io.Writer, edArr []extract.ExtractData, c ddgos.Commader
 
 		// 対象がファイルだった場合は、touchコマンドを書き出す
 		if !ed.FileInfo.IsDir() && !l.opt.OnlyDirLoad {
-			_, err := w.Write([]byte(fmt.Sprintf("%s%s", c.GetMkfileCd(filepath.Join(ed.FileDirPath, ed.FileInfo.Name())), c.GetLineFeed())))
+			_, err := w.Write([]byte(fmt.Sprintf("%s%s", o.GetMkfileCd(filepath.Join(ed.FileDirPath, ed.FileInfo.Name())), o.GetLineFeed())))
 			if err != nil {
 				return err
 			}
@@ -52,7 +52,7 @@ func (l *loader) Load(w io.Writer, edArr []extract.ExtractData, c ddgos.Commader
 
 		// 所有者・グループの変更コマンドの生成
 		if l.opt.NeedsOutputChown {
-			_, err := w.Write([]byte(fmt.Sprintf("%s%s", c.GetChownCd(ed.Owner, ed.Group, filepath.Join(ed.FileDirPath, ed.FileInfo.Name())), c.GetLineFeed())))
+			_, err := w.Write([]byte(fmt.Sprintf("%s%s", o.GetChownCd(ed.Owner, ed.Group, filepath.Join(ed.FileDirPath, ed.FileInfo.Name())), o.GetLineFeed())))
 			if err != nil {
 				println(err.Error())
 				os.Exit(1)
@@ -61,7 +61,7 @@ func (l *loader) Load(w io.Writer, edArr []extract.ExtractData, c ddgos.Commader
 
 		// 権限変更コマンドの生成
 		if l.opt.NeedsOutputChmod {
-			_, err := w.Write([]byte(fmt.Sprintf("%s%s", c.GetChmodCd(filepath.Join(ed.FileDirPath, ed.FileInfo.Name()), ed.FileInfo.Mode().Perm()), c.GetLineFeed())))
+			_, err := w.Write([]byte(fmt.Sprintf("%s%s", o.GetChmodCd(filepath.Join(ed.FileDirPath, ed.FileInfo.Name()), ed.FileInfo.Mode().Perm()), o.GetLineFeed())))
 			if err != nil {
 				println(err.Error())
 				os.Exit(1)
@@ -69,7 +69,7 @@ func (l *loader) Load(w io.Writer, edArr []extract.ExtractData, c ddgos.Commader
 		}
 
 		// 改行コードを出力
-		_, err = w.Write([]byte(c.GetLineFeed()))
+		_, err = w.Write([]byte(o.GetLineFeed()))
 		if err != nil {
 			println(err.Error())
 			os.Exit(1)
