@@ -8,6 +8,7 @@ import (
 	"github.com/duplicate-dirs-go/loader"
 	"github.com/duplicate-dirs-go/option"
 	ddgos "github.com/duplicate-dirs-go/os"
+	"github.com/duplicate-dirs-go/transform"
 )
 
 func main() {
@@ -43,6 +44,10 @@ func main() {
 		}
 	}
 
+	// 抽出したデータを出力用にに変換する
+	t := transform.NewTramsformer(opt)
+	transformDataArr := t.Transform(extractDataArr, opSys)
+
 	// 出力用のファイルを生成する
 	f, err := os.OpenFile(opt.LoadFileNm, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0664)
 	if err != nil {
@@ -53,7 +58,7 @@ func main() {
 
 	// 最終的なファイルを出力する
 	l := loader.NewLoader(opt)
-	err = l.Load(f, extractDataArr, opSys)
+	err = l.Load(f, transformDataArr)
 	if err != nil {
 		println(err.Error())
 		os.Exit(1)
